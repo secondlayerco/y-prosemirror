@@ -538,6 +538,7 @@ export class ProsemirrorBinding {
         new PModel.Slice(PModel.Fragment.from(fragmentContent), 0, 0)
       )
       
+      // Napkin update: add try/catch to prevent errors from crashing the app (for some reason the position is sometimes out of range +1)
       try {
         restoreRelativeSelection(tr, this.beforeTransactionSelection, this)
         tr = tr.setMeta(ySyncPluginKey, { isChangeOrigin: true, isUndoRedoOperation: transaction.origin instanceof Y.UndoManager })
@@ -554,7 +555,7 @@ export class ProsemirrorBinding {
   }
 
   _prosemirrorChanged (doc) {
-    // Skip updates if the doc is not synced yet
+    // Napkin update: skip updates if the doc is not synced yet
     if (!this.doc.isSynced) {
       return
     }
