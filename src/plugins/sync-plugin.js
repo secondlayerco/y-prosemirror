@@ -537,18 +537,28 @@ export class ProsemirrorBinding {
         this.prosemirrorView.state.doc.content.size,
         new PModel.Slice(PModel.Fragment.from(fragmentContent), 0, 0)
       )
-      restoreRelativeSelection(tr, this.beforeTransactionSelection, this)
-      tr = tr.setMeta(ySyncPluginKey, { isChangeOrigin: true, isUndoRedoOperation: transaction.origin instanceof Y.UndoManager })
-      if (
-        this.beforeTransactionSelection !== null && this._isLocalCursorInView()
-      ) {
-        tr.scrollIntoView()
+      
+      try {
+        restoreRelativeSelection(tr, this.beforeTransactionSelection, this)
+        tr = tr.setMeta(ySyncPluginKey, { isChangeOrigin: true, isUndoRedoOperation: transaction.origin instanceof Y.UndoManager })
+        if (
+          this.beforeTransactionSelection !== null && this._isLocalCursorInView()
+        ) {
+          tr.scrollIntoView()
+        }
+      } catch (e) {
+        console.error(e);
       }
       this.prosemirrorView.dispatch(tr)
     })
   }
 
   _prosemirrorChanged (doc) {
+    // Skip updates if the doc is not synced yet
+    if (!this.doc.isSynced) {
+      return
+    }
+
     this.doc.transact(() => {
       updateYFragment(this.doc, this.type, doc, this.mapping)
       this.beforeTransactionSelection = getRelativeSelection(
