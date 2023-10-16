@@ -543,7 +543,10 @@ export class ProsemirrorBinding {
         restoreRelativeSelection(tr, this.beforeTransactionSelection, this)
         tr = tr.setMeta(ySyncPluginKey, { isChangeOrigin: true, isUndoRedoOperation: transaction.origin instanceof Y.UndoManager })
         if (
-          this.beforeTransactionSelection !== null && this._isLocalCursorInView()
+          this._isLocalCursorInView() &&
+          this.beforeTransactionSelection !== null && 
+          this.beforeTransactionSelection.anchor !== null && this.beforeTransactionSelection.anchor.item !== null &&
+          this.beforeTransactionSelection.head !== null && this.beforeTransactionSelection.head.item !== null
         ) {
           tr.scrollIntoView()
         }
