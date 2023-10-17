@@ -257,6 +257,8 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
       console.debug('[y-prosemirror] restoreRelativeSelection', { anchor, head, relSel });
       tr = tr.setSelection(TextSelection.create(tr.doc, anchor, head))
     }
+  } else {
+    console.debug('[y-prosemirror] restoreRelativeSelection: skip', { relSel });
   }
 }
 
@@ -557,6 +559,7 @@ export class ProsemirrorBinding {
           this.beforeTransactionSelection.anchor !== null && this.beforeTransactionSelection.anchor.item !== null &&
           this.beforeTransactionSelection.head !== null && this.beforeTransactionSelection.head.item !== null
         ) {
+          console.debug('[y-prosemirror] _typeChanged: scrollIntoView');
           tr.scrollIntoView()
         }
       } catch (e) {
