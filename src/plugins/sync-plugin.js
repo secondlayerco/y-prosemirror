@@ -233,7 +233,14 @@ export const ySyncPlugin = (yXmlFragment, {
  * @param {ProsemirrorBinding} binding
  */
 const restoreRelativeSelection = (tr, relSel, binding) => {
-  if (relSel !== null && relSel.anchor !== null && relSel.head !== null) {
+  if (
+    relSel !== null && 
+    relSel.anchor !== null && 
+    relSel.head !== null &&
+    // Napkin update: add check for null on item (to prevent random position updates while switching pages)
+    relSel.anchor.item !== null && 
+    relSel.head.item !== null
+  ) {
     const anchor = relativePositionToAbsolutePosition(
       binding.doc,
       binding.type,
@@ -247,6 +254,7 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
       binding.mapping
     )
     if (anchor !== null && head !== null) {
+      console.debug('[y-prosemirror] restoreRelativeSelection', { anchor, head, relSel });
       tr = tr.setSelection(TextSelection.create(tr.doc, anchor, head))
     }
   }
@@ -545,6 +553,7 @@ export class ProsemirrorBinding {
         if (
           this._isLocalCursorInView() &&
           this.beforeTransactionSelection !== null && 
+          // Napkin update: add check for null on item (to prevent random scrolls while switching pages)
           this.beforeTransactionSelection.anchor !== null && this.beforeTransactionSelection.anchor.item !== null &&
           this.beforeTransactionSelection.head !== null && this.beforeTransactionSelection.head.item !== null
         ) {
