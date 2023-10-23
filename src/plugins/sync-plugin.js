@@ -236,10 +236,10 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
   if (
     relSel !== null && 
     relSel.anchor !== null && 
-    relSel.head !== null &&
-    // Napkin update: add check for null on item (to prevent random position updates while switching pages)
-    relSel.anchor.item !== null && 
-    relSel.head.item !== null
+    relSel.head !== null
+    // /// Napkin update: add check for null on item (to prevent random position updates while switching pages)
+    // relSel.anchor.item !== null && 
+    // relSel.head.item !== null
   ) {
     const anchor = relativePositionToAbsolutePosition(
       binding.doc,
