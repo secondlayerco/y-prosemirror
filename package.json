@@ -58,8 +58,7 @@
     "prosemirror-model": "^1.7.1",
     "prosemirror-state": "^1.2.3",
     "prosemirror-view": "^1.9.10",
-    "y-protocols": "^1.0.1",
-    "yjs": "^13.5.38"
+    "y-protocols": "^1.0.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
