@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.4-napkin] (2024-01-30)
+- Pull in changes from y-prosemirror (1.2.2)
+
 ## [1.0.3-napkin] (2023-12-11)
 - Inspect meta of appendedTransaction for possible addToHistory:false (https://github.com/yjs/y-prosemirror/pull/142)
 

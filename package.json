@@ -1,6 +1,6 @@
 {
   "name": "y-prosemirror",
-  "version": "1.0.3-napkin",
+  "version": "1.0.4-napkin",
   "description": "Prosemirror bindings for Yjs",
   "main": "./dist/y-prosemirror.cjs",
   "module": "./src/y-prosemirror.js",
@@ -22,6 +22,7 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/src/y-prosemirror.d.ts",
       "import": "./src/y-prosemirror.js",
       "require": "./dist/y-prosemirror.cjs"
     }
@@ -79,5 +80,9 @@
     "y-protocols": "^1.0.5",
     "y-webrtc": "^10.2.0",
     "yjs": "^13.5.38"
+  },
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=16.0.0"
   }
 }
