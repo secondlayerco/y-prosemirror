@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.5-napkin] (2024-04-18)
+- Upgrade yjs to 13.6.14
+
 ## [1.0.4-napkin] (2024-01-30)
 - Pull in changes from y-prosemirror (1.2.2)
 
