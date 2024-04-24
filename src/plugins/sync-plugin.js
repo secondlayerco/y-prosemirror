@@ -237,10 +237,11 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
   if (
     relSel !== null && 
     relSel.anchor !== null && 
-    relSel.head !== null
-    // /// Napkin update: add check for null on item (to prevent random position updates while switching pages)
-    // relSel.anchor.item !== null && 
-    // relSel.head.item !== null
+    relSel.head !== null &&
+
+    // Napkin update: add check for null on item (to prevent random position updates while switching pages)
+    relSel.anchor.item !== null && 
+    relSel.head.item !== null
   ) {
     const anchor = relativePositionToAbsolutePosition(
       binding.doc,
@@ -563,10 +564,10 @@ export class ProsemirrorBinding {
           console.debug('[y-prosemirror] _typeChanged: scrollIntoView');
           tr.scrollIntoView()
         }
+        this.prosemirrorView.dispatch(tr)
       } catch (e) {
         console.error(e);
       }
-      this.prosemirrorView.dispatch(tr)
     })
   }
 

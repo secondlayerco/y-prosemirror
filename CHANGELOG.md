@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.6-napkin] (2024-04-24)
+- Fix crash in restoreRelativeSelection (invalid selection)
+
 ## [1.0.5-napkin] (2024-04-18)
 - Upgrade yjs to 13.6.14
 
