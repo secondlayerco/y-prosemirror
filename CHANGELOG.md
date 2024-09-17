@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0-napkin] (2024-09-17)
+- Upgrade prosemirror and yjs dependencies
+
 ## [1.0.6-napkin] (2024-04-24)
 - Fix crash in restoreRelativeSelection (invalid selection)
 
