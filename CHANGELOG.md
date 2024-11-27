@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.0-napkin] (2024-11-27)
+- Upgrade prosemirror and yjs dependencies
+- Pull in changes from y-prosemirror (1.2.13)
+
 ## [1.1.0-napkin] (2024-09-17)
 - Upgrade prosemirror and yjs dependencies
 - Pull in changes from y-prosemirror (1.2.12)
