@@ -4,7 +4,7 @@
 
 import { createMutex } from 'lib0/mutex'
 import * as PModel from 'prosemirror-model'
-import { Plugin, TextSelection } from "prosemirror-state"; // eslint-disable-line
+import { AllSelection, Plugin, TextSelection } from "prosemirror-state"; // eslint-disable-line
 import * as math from 'lib0/math'
 import * as object from 'lib0/object'
 import * as set from 'lib0/set'
@@ -241,21 +241,25 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
     relSel.anchor.item !== null && 
     relSel.head.item !== null
   ) {
-    const anchor = relativePositionToAbsolutePosition(
-      binding.doc,
-      binding.type,
-      relSel.anchor,
-      binding.mapping
-    )
-    const head = relativePositionToAbsolutePosition(
-      binding.doc,
-      binding.type,
-      relSel.head,
-      binding.mapping
-    )
-    if (anchor !== null && head !== null) {
-      console.debug('[y-prosemirror] restoreRelativeSelection', { anchor, head, relSel });
-      tr = tr.setSelection(TextSelection.create(tr.doc, anchor, head))
+    if (relSel.type === 'all') {
+      tr.setSelection(new AllSelection(tr.doc))
+    } else {
+      const anchor = relativePositionToAbsolutePosition(
+        binding.doc,
+        binding.type,
+        relSel.anchor,
+        binding.mapping
+      )
+      const head = relativePositionToAbsolutePosition(
+        binding.doc,
+        binding.type,
+        relSel.head,
+        binding.mapping
+      )
+      if (anchor !== null && head !== null) {
+        console.debug('[y-prosemirror] restoreRelativeSelection', { anchor, head, relSel });
+        tr = tr.setSelection(TextSelection.create(tr.doc, anchor, head))
+      }
     }
   } else {
     console.debug('[y-prosemirror] restoreRelativeSelection: skip', { relSel });
@@ -263,6 +267,7 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
 }
 
 export const getRelativeSelection = (pmbinding, state) => ({
+  type: state.selection.jsonID,
   anchor: absolutePositionToRelativePosition(
     state.selection.anchor,
     pmbinding.type,
@@ -341,6 +346,8 @@ export class ProsemirrorBinding {
 
   _isDomSelectionInView () {
     const selection = this.prosemirrorView._root.getSelection()
+
+    if (selection == null || selection.anchorNode == null) return false
 
     const range = this.prosemirrorView._root.createRange()
     range.setStart(selection.anchorNode, selection.anchorOffset)
