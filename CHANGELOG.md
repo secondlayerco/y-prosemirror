@@ -5,6 +5,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [1.3.1-napkin] (2025-05-06)
 - Upgrade prosemirror and yjs dependencies
+- Pull in changes from y-prosemirror (1.3.4)
 
 ## [1.3.0-napkin] (2025-03-04)
 - Upgrade prosemirror and yjs dependencies
