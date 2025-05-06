@@ -18,12 +18,27 @@ import {
 } from '../src/y-prosemirror.js'
 import { EditorState, Plugin, TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
+import { Schema } from 'prosemirror-model'
 import * as basicSchema from 'prosemirror-schema-basic'
 import { findWrapping } from 'prosemirror-transform'
 import { schema as complexSchema } from './complexSchema.js'
 import * as promise from 'lib0/promise'
 
-const schema = /** @type {any} */ (basicSchema.schema)
+const schema = new Schema({
+  nodes: basicSchema.nodes,
+  marks: Object.assign({}, basicSchema.marks, {
+    comment: {
+      attrs: {
+        id: { default: null }
+      },
+      excludes: '',
+      parseDOM: [{ tag: 'comment' }],
+      toDOM (node) {
+        return ['comment', { comment_id: node.attrs.id }]
+      }
+    }
+  })
+})
 
 /**
  * Verify that update events in plugins are only fired once.
@@ -78,6 +93,46 @@ export const testPluginIntegrity = (_tc) => {
     viewUpdateEvents: 1,
     stateUpdateEvents: 2 // fired twice, because the ySyncPlugin adds additional fields to state after the initial render
   }, 'events are fired only once')
+}
+
+/**
+ * @param {t.TestCase} tc
+ */
+export const testOverlappingMarks = (_tc) => {
+  const view = new EditorView(null, {
+    state: EditorState.create({
+      schema,
+      plugins: []
+    })
+  })
+  view.dispatch(
+    view.state.tr.insert(
+      0,
+      schema.node(
+        'paragraph',
+        undefined,
+        schema.text('hello world')
+      )
+    )
+  )
+
+  view.dispatch(
+    view.state.tr.addMark(1, 3, schema.mark('comment', { id: 4 }))
+  )
+  view.dispatch(
+    view.state.tr.addMark(2, 4, schema.mark('comment', { id: 5 }))
+  )
+  const stateJSON = JSON.parse(JSON.stringify(view.state.doc.toJSON()))
+  // attrs.ychange is only available with a schema
+  delete stateJSON.content[0].attrs
+  const back = prosemirrorJSONToYDoc(/** @type {any} */ (schema), stateJSON)
+  // test if transforming back and forth from Yjs doc works
+  const backandforth = JSON.parse(JSON.stringify(yDocToProsemirrorJSON(back)))
+  t.compare(stateJSON, backandforth)
+
+  // re-assure that we have overlapping comments
+  const expected = '[{"type":"text","marks":[{"type":"comment","attrs":{"id":4}}],"text":"h"},{"type":"text","marks":[{"type":"comment","attrs":{"id":4}},{"type":"comment","attrs":{"id":5}}],"text":"e"},{"type":"text","marks":[{"type":"comment","attrs":{"id":5}}],"text":"l"},{"type":"text","text":"lo world"}]'
+  t.compare(backandforth.content[0].content, JSON.parse(expected))
 }
 
 /**
@@ -173,7 +228,7 @@ export const testEmptyNotSync = (_tc) => {
   )
   t.compareStrings(
     type.toString(),
-    '<custom checked="true"></custom><paragraph></paragraph>'
+    '<custom checked="true"></custom>'
   )
 }
 
@@ -334,8 +389,8 @@ export const testInitialCursorPosition2 = async (_tc) => {
   p.insert(0, [new Y.XmlText('hello world!')])
   yxml.insert(0, [p])
   console.log('anchor', view.state.selection.anchor)
-  t.assert(view.state.selection.anchor === 0)
-  t.assert(view.state.selection.head === 0)
+  t.assert(view.state.selection.anchor === 1)
+  t.assert(view.state.selection.head === 1)
 }
 
 export const testVersioning = async (_tc) => {
@@ -361,7 +416,7 @@ export const testVersioning = async (_tc) => {
   await promise.wait(50)
   console.log('calculated diff via snapshots: ', view.state.doc.toJSON())
   // recreate the JSON, because ProseMirror messes with the constructors
-  const viewstate1 = JSON.parse(JSON.stringify(view.state.doc.toJSON().content[1].content))
+  const viewstate1 = JSON.parse(JSON.stringify(view.state.doc.toJSON().content[0].content))
   const expectedState = [{
     type: 'text',
     marks: [{ type: 'ychange', attrs: { user: 'me', type: 'removed' } }],
@@ -379,9 +434,42 @@ export const testVersioning = async (_tc) => {
   )
   await promise.wait(50)
 
-  const viewstate2 = JSON.parse(JSON.stringify(view.state.doc.toJSON().content[1].content))
+  const viewstate2 = JSON.parse(JSON.stringify(view.state.doc.toJSON().content[0].content))
   console.log('calculated diff via updates: ', JSON.stringify(viewstate2))
   t.compare(viewstate2, expectedState)
+}
+
+export const testVersioningWithGarbageCollection = async (_tc) => {
+  const ydoc = new Y.Doc()
+  const yxml = ydoc.get('prosemirror', Y.XmlFragment)
+  const permanentUserData = new Y.PermanentUserData(ydoc)
+  permanentUserData.setUserMapping(ydoc, ydoc.clientID, 'me')
+  console.log('yxml', yxml.toString())
+  const view = createNewComplexProsemirrorView(ydoc)
+  const p = new Y.XmlElement('paragraph')
+  const ytext = new Y.XmlText('hello world!')
+  p.insert(0, [ytext])
+  yxml.insert(0, [p])
+  const snapshotDoc1 = Y.encodeStateAsUpdateV2(ydoc)
+  ytext.delete(0, 6)
+  const snapshotDoc2 = Y.encodeStateAsUpdateV2(ydoc)
+  view.dispatch(
+    view.state.tr.setMeta(ySyncPluginKey, { snapshot: snapshotDoc2, prevSnapshot: snapshotDoc1, permanentUserData })
+  )
+  await promise.wait(50)
+  console.log('calculated diff via snapshots: ', view.state.doc.toJSON())
+  // recreate the JSON, because ProseMirror messes with the constructors
+  const viewstate1 = JSON.parse(JSON.stringify(view.state.doc.toJSON().content[0].content))
+  const expectedState = [{
+    type: 'text',
+    marks: [{ type: 'ychange', attrs: { user: 'me', type: 'removed' } }],
+    text: 'hello '
+  }, {
+    type: 'text',
+    text: 'world!'
+  }]
+  console.log('calculated diff via snapshots: ', JSON.stringify(viewstate1))
+  t.compare(viewstate1, expectedState)
 }
 
 export const testAddToHistoryIgnore = (_tc) => {
@@ -515,6 +603,8 @@ let charCounter = 0
 
 const marksChoices = [
   [schema.mark('strong')],
+  [schema.mark('comment', { id: 1 })],
+  [schema.mark('comment', { id: 2 })],
   [schema.mark('em')],
   [schema.mark('em'), schema.mark('strong')],
   [],
@@ -546,6 +636,20 @@ const pmChanges = [
       2
     )
     p.dispatch(p.state.tr.insertText('', insertPos, insertPos + overwrite))
+  },
+  /**
+   * @param {Y.Doc} y
+   * @param {prng.PRNG} gen
+   * @param {EditorView} p
+   */
+  (_y, gen, p) => { // format text
+    const insertPos = prng.int32(gen, 0, p.state.doc.content.size)
+    const formatLen = math.min(
+      prng.int32(gen, 0, p.state.doc.content.size - insertPos),
+      2
+    )
+    const mark = prng.oneOf(gen, marksChoices.filter(choice => choice.length > 0))[0]
+    p.dispatch(p.state.tr.addMark(insertPos, insertPos + formatLen, mark))
   },
   /**
    * @param {Y.Doc} y
