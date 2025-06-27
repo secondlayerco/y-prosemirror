@@ -998,11 +998,17 @@ const isObject = (val) => typeof val === "object" && val !== null;
  */
 const equalAttrs = (pattrs, yattrs) => {
   const keys = Object.keys(pattrs).filter((key) => pattrs[key] !== null);
-  let eq =
-    keys.length ===
-    (yattrs == null
-      ? 0
-      : Object.keys(yattrs).filter((key) => yattrs[key] !== null).length);
+
+  let yattrsLength = 0;
+  if (yattrs !== null) {
+    try {
+      yattrsLength = Object.keys(yattrs).filter((key) => yattrs[key] !== null).length);
+    } catch (e) {
+      console.error("[yProsemirror] equalAttrs error", e);
+    }
+  }
+
+  let eq = keys.length === yattrsLength;
   for (let i = 0; i < keys.length && eq; i++) {
     const key = keys[i];
     const l = pattrs[key];
