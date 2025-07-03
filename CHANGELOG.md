@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.4-napkin] (2025-07-03)
+- Upgrade prosemirror and yjs dependencies
+
 ## [1.3.3-napkin] (2025-06-27)
 - Pull in changes from y-prosemirror (1.3.6)
 - Fix potential crash in equalAttrs (from Object.keys(yattrs))
