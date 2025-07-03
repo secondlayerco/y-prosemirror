@@ -295,11 +295,8 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
         binding.mapping
       );
       if (anchor !== null && head !== null) {
-        const sel = TextSelection.between(
-          tr.doc.resolve(anchor),
-          tr.doc.resolve(head)
-        );
-        tr.setSelection(sel);
+        const sel = TextSelection.between(tr.doc.resolve(anchor), tr.doc.resolve(head))
+        tr.setSelection(sel)
       }
     }
   } else {
