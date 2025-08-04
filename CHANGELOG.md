@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.5-napkin] (2025-08-04)
+- Fix typo in sync-plugin.js
+
 ## [1.3.4-napkin] (2025-07-03)
 - Upgrade prosemirror and yjs dependencies
 
