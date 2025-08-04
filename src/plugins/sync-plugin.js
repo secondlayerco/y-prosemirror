@@ -295,8 +295,11 @@ const restoreRelativeSelection = (tr, relSel, binding) => {
         binding.mapping
       );
       if (anchor !== null && head !== null) {
-        const sel = TextSelection.between(tr.doc.resolve(anchor), tr.doc.resolve(head))
-        tr.setSelection(sel)
+        const sel = TextSelection.between(
+          tr.doc.resolve(anchor),
+          tr.doc.resolve(head)
+        );
+        tr.setSelection(sel);
       }
     }
   } else {
@@ -999,7 +1002,9 @@ const equalAttrs = (pattrs, yattrs) => {
   let yattrsLength = 0;
   if (yattrs !== null) {
     try {
-      yattrsLength = Object.keys(yattrs).filter((key) => yattrs[key] !== null).length);
+      yattrsLength = Object.keys(yattrs).filter(
+        (key) => yattrs[key] !== null
+      ).length;
     } catch (e) {
       console.error("[yProsemirror] equalAttrs error", e);
     }
