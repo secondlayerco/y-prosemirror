@@ -57,11 +57,11 @@
     "lib0": "^0.2.109"
   },
   "peerDependencies": {
-    "prosemirror-model": "^1.25.1",
-    "prosemirror-state": "^1.4.3",
-    "prosemirror-view": "^1.40.0",
-    "y-protocols": "^1.0.6",
-    "yjs": "^13.6.27"
+    "prosemirror-model": "^1.25.4",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-view": "^1.41.6",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.29"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
@@ -70,17 +70,17 @@
     "http-server": "^0.12.3",
     "jsdom": "^15.1.1",
     "prosemirror-example-setup": "^1.2.3",
-    "prosemirror-model": "^1.25.1",
+    "prosemirror-model": "^1.25.4",
     "prosemirror-schema-basic": "^1.2.4",
-    "prosemirror-state": "^1.4.3",
-    "prosemirror-transform": "^1.10.4",
-    "prosemirror-view": "^1.40.0",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-transform": "^1.11.0",
+    "prosemirror-view": "^1.41.6",
     "rollup": "^2.59.0",
     "standard": "^17.1.2",
     "typescript": "^5.8.3",
-    "y-protocols": "^1.0.6",
+    "y-protocols": "^1.0.7",
     "y-webrtc": "^10.3.0",
-    "yjs": "^13.6.27"
+    "yjs": "^13.6.29"
   },
   "engines": {
     "npm": ">=8.0.0",
