@@ -17,7 +17,7 @@ import {
   yUndoPluginKey,
   yXmlFragmentToProsemirrorJSON
 } from '../src/y-prosemirror.js'
-import { EditorState, Plugin, TextSelection } from 'prosemirror-state'
+import { EditorState, NodeSelection, Plugin, TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema } from 'prosemirror-model'
 import * as basicSchema from 'prosemirror-schema-basic'
@@ -600,6 +600,79 @@ export const testAddToHistoryIgnoreWithAppendTransactionPlugin = (_tc) => {
   )
 }
 
+/**
+ * A local view and a remote peer sharing the same paragraphs. `sendRemote` edits the remote fragment and
+ * applies the change to the local doc the way a provider does.
+ *
+ * @param {Array<string|null>} blocks paragraph texts, null for a horizontal rule
+ */
+const createViewWithRemotePeer = (blocks) => {
+  const ydoc = new Y.Doc()
+  const view = createNewProsemirrorView(ydoc)
+  view.dispatch(view.state.tr.replaceWith(0, view.state.doc.content.size, blocks.map(text =>
+    text === null
+      ? schema.node('horizontal_rule')
+      : schema.node('paragraph', undefined, text === '' ? undefined : schema.text(text))
+  )))
+  const remote = new Y.Doc()
+  Y.applyUpdate(remote, Y.encodeStateAsUpdate(ydoc))
+  /**
+   * @param {function(Y.XmlFragment):void} f
+   */
+  const sendRemote = (f) => {
+    const sv = Y.encodeStateVector(remote)
+    f(remote.getXmlFragment('prosemirror'))
+    Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(remote, sv), 'remote')
+  }
+  return { view, sendRemote }
+}
+
+/**
+ * @param {EditorView} view
+ * @param {number} index
+ */
+const endOfBlock = (view, index) => {
+  let pos = 0
+  for (let i = 0; i <= index; i++) pos += view.state.doc.child(i).nodeSize
+  return pos - 1
+}
+
+/**
+ * A caret at the end of a paragraph has no Yjs item after it. A remote edit must still leave it there.
+ *
+ * @param {t.TestCase} _tc
+ */
+export const testRemoteEditKeepsCaretAtParagraphEnd = (_tc) => {
+  const { view, sendRemote } = createViewWithRemotePeer(['one', 'two', 'three'])
+  view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, endOfBlock(view, 1))))
+  sendRemote(fragment => /** @type {Y.XmlText} */ (/** @type {Y.XmlElement} */ (fragment.get(0)).get(0)).insert(0, 'remote '))
+  t.compareStrings(view.state.doc.child(0).textContent, 'remote one')
+  t.assert(view.state.selection.anchor === endOfBlock(view, 1), 'caret stays at the end of "two"')
+  t.assert(view.state.selection.head === endOfBlock(view, 1))
+}
+
+/**
+ * @param {t.TestCase} _tc
+ */
+export const testRemoteEditKeepsCaretInEmptyParagraph = (_tc) => {
+  const { view, sendRemote } = createViewWithRemotePeer(['one', '', 'three'])
+  view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, endOfBlock(view, 1))))
+  sendRemote(fragment => /** @type {Y.XmlText} */ (/** @type {Y.XmlElement} */ (fragment.get(0)).get(0)).insert(0, 'remote '))
+  t.assert(view.state.selection.anchor === endOfBlock(view, 1), 'caret stays in the empty paragraph')
+}
+
+/**
+ * A selection that no longer resolves must not stop the remote change from rendering.
+ *
+ * @param {t.TestCase} _tc
+ */
+export const testRemoteDeleteOfSelectedLastNodeRenders = (_tc) => {
+  const { view, sendRemote } = createViewWithRemotePeer(['one', 'two', null])
+  view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, endOfBlock(view, 1) + 1)))
+  sendRemote(fragment => fragment.delete(2, 1))
+  t.assert(view.state.doc.childCount === 2, 'the remote delete is rendered')
+}
+
 const appendTransactionPlugin = () => new Plugin({
   appendTransaction: (_, __, state) => {
     // intentionally returns empty transaction
@@ -609,6 +682,8 @@ const appendTransactionPlugin = () => new Plugin({
 })
 
 const createNewProsemirrorViewWithSchema = (y, schema, undoManager = false, appendTransaction = false) => {
+  // Napkin: the sync plugin only writes to a doc the app marked as loaded
+  y.isSynced = true
   const view = new EditorView(null, {
     // @ts-ignore
     state: EditorState.create({

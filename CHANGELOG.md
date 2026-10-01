@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.7-napkin] (2026-10-01)
+- Restore the caret after a remote change when it sits at the end of a paragraph or in an empty one (it jumped to the end of the document)
+- A selection that cannot be restored no longer stops a remote change from rendering
+
 ## [1.3.6-napkin] (2026-02-13)
 - Upgrade prosemirror and yjs dependencies
 
