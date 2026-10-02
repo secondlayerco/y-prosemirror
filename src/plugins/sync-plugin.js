@@ -263,47 +263,43 @@ export const ySyncPlugin = (
  * @param {ProsemirrorBinding} binding
  */
 const restoreRelativeSelection = (tr, relSel, binding) => {
-  if (
-    relSel !== null &&
-    relSel.anchor !== null &&
-    relSel.head !== null &&
-    // Napkin update: add check for null on item (to prevent random position updates while switching pages)
-    relSel.anchor.item !== null &&
-    relSel.head.item !== null
-  ) {
-    if (relSel.type === "all") {
-      tr.setSelection(new AllSelection(tr.doc));
-    } else if (relSel.type === "node") {
-      const anchor = relativePositionToAbsolutePosition(
-        binding.doc,
-        binding.type,
-        relSel.anchor,
-        binding.mapping
-      );
-      tr.setSelection(NodeSelection.create(tr.doc, anchor));
-    } else {
-      const anchor = relativePositionToAbsolutePosition(
-        binding.doc,
-        binding.type,
-        relSel.anchor,
-        binding.mapping
-      );
-      const head = relativePositionToAbsolutePosition(
-        binding.doc,
-        binding.type,
-        relSel.head,
-        binding.mapping
-      );
-      if (anchor !== null && head !== null) {
-        const sel = TextSelection.between(
-          tr.doc.resolve(anchor),
-          tr.doc.resolve(head)
+  if (relSel !== null && relSel.anchor !== null && relSel.head !== null) {
+    // Napkin update: a selection that no longer resolves keeps its mapped position, so the change still renders
+    try {
+      if (relSel.type === "all") {
+        tr.setSelection(new AllSelection(tr.doc));
+      } else if (relSel.type === "node") {
+        const anchor = relativePositionToAbsolutePosition(
+          binding.doc,
+          binding.type,
+          relSel.anchor,
+          binding.mapping
         );
-        tr.setSelection(sel);
+        tr.setSelection(NodeSelection.create(tr.doc, anchor));
+      } else {
+        const anchor = relativePositionToAbsolutePosition(
+          binding.doc,
+          binding.type,
+          relSel.anchor,
+          binding.mapping
+        );
+        const head = relativePositionToAbsolutePosition(
+          binding.doc,
+          binding.type,
+          relSel.head,
+          binding.mapping
+        );
+        if (anchor !== null && head !== null) {
+          const sel = TextSelection.between(
+            tr.doc.resolve(anchor),
+            tr.doc.resolve(head)
+          );
+          tr.setSelection(sel);
+        }
       }
+    } catch (e) {
+      console.error(e);
     }
-  } else {
-    console.debug("[y-prosemirror] restoreRelativeSelection: skip", { relSel });
   }
 };
 
@@ -700,15 +696,9 @@ export class ProsemirrorBinding {
           isUndoRedoOperation: transaction.origin instanceof Y.UndoManager,
         });
         if (
-          this._isLocalCursorInView() &&
           this.beforeTransactionSelection !== null &&
-          // Napkin update: add check for null on item (to prevent random scrolls while switching pages)
-          this.beforeTransactionSelection.anchor !== null &&
-          this.beforeTransactionSelection.anchor.item !== null &&
-          this.beforeTransactionSelection.head !== null &&
-          this.beforeTransactionSelection.head.item !== null
+          this._isLocalCursorInView()
         ) {
-          console.debug("[y-prosemirror] _typeChanged: scrollIntoView");
           tr.scrollIntoView();
         }
         this.prosemirrorView.dispatch(tr);
